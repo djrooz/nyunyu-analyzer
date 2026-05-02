@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Нюню — Анализатор</title>
+<style>
+:root{--g:#1a6b3a;--dg:#0d3d22;--gold:#f0c040;--border:#2a8a4a;--text:#e8e0d0}
+*{box-sizing:border-box;margin:0;padding:0}
+body{background:radial-gradient(ellipse at center,#1e5c35 0%,#0a2e18 100%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:16px}
+h1{text-align:center;font-size:2.2rem;color:var(--gold);text-shadow:0 2px 10px rgba(240,192,64,.5);margin-bottom:4px;letter-spacing:2px}
+.sub{text-align:center;color:#9fcc9f;margin-bottom:18px;font-size:.9rem}
+
+.settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;background:rgba(0,0,0,.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1px solid var(--border)}
+.sg{display:flex;align-items:center;gap:6px;font-size:.85rem}
+.sg label{color:#b0d0b0}
+.sg input[type=number],.sg select{width:70px;padding:3px 6px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.85rem}
+.sg input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--gold)}
+
+.hand-area{display:flex;justify-content:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
+.card{width:78px;height:116px;background:#fff;border-radius:10px;display:flex;flex-direction:column;justify-content:space-between;padding:5px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s,border-color .2s;border:3px solid transparent;user-select:none}
+.card:hover{transform:translateY(-8px);box-shadow:0 12px 24px rgba(0,0,0,.6)}
+.card.in-triple{border-color:#4af;transform:translateY(-6px)}
+.card.in-pair{border-color:#fa4;transform:translateY(-6px)}
+.rt,.rb{font-size:1.1rem;font-weight:700;line-height:1.1}
+.rb{transform:rotate(180deg);align-self:flex-end}
+.sc{text-align:center;font-size:1.8rem;line-height:1}
+.red{color:#c00}.black{color:#111}
+
+.controls{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
+.btn{padding:10px 24px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.5px}
+.btn-p{background:linear-gradient(135deg,#2d8a50,#1a5c35);color:#fff;border:2px solid #4aaa70}
+.btn-p:hover{background:linear-gradient(135deg,#3aaa60,#2a7a45);transform:translateY(-2px)}
+.btn-g{background:linear-gradient(135deg,#e8b030,#c08020);color:#1a1a1a;border:2px solid #f0c840}
+.btn-g:hover{background:linear-gradient(135deg,#f0c040,#d09030);transform:translateY(-2px)}
+
+.results{display:none}
+.results.on{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:700px){.results.on{grid-template-columns:1fr}}
+
+.panel{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;padding:14px}
+.panel h3{color:var(--gold);margin-bottom:10px;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:6px}
+
+.ct{width:100%;border-collapse:collapse;font-size:.76rem}
+.ct th{color:#9fcc9f;text-align:left;padding:3px 5px;border-bottom:1px solid var(--border)}
+.ct td{padding:3px 5px;border-bottom:1px solid rgba(42,138,74,.2)}
+.ct .vr{color:#b0ffb0}.ct .iv{color:#555}.ct .br{background:rgba(240,192,64,.12);color:var(--gold);font-weight:700}
+.ok{color:#4f4}.no{color:#f44}
+
+.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(42,138,74,.2)}
+.stat-row:last-of-type{border:none}
+.sl{color:#9fcc9f;font-size:.9rem}
+.sv{font-weight:700;font-size:1rem}
+.pbar{height:7px;background:rgba(0,0,0,.3);border-radius:4px;margin-top:3px;overflow:hidden}
+.pbf{height:100%;border-radius:4px;transition:width .6s}
+.bw{background:linear-gradient(90deg,#2a8,#4d4)}
+.bt{background:linear-gradient(90deg,#88a,#aaa)}
+.bl{background:linear-gradient(90deg,#a22,#d44)}
+
+.ev-act{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;margin-bottom:7px;border:1px solid transparent;background:rgba(255,255,255,.04)}
+.ev-act.rec{border-color:var(--gold);background:rgba(240,192,64,.1)}
+.an{font-weight:600;font-size:.9rem}
+.ev-v{font-size:1.1rem;font-weight:700}
+.pos{color:#4f4}.neg{color:#f44}.neu{color:#aaa}
+
+.full{grid-column:1/-1}
+.rec-box{padding:16px 20px;border-radius:10px;text-align:center}
+.rc-r{background:rgba(64,200,64,.15);border:2px solid #4c4}
+.rc-c{background:rgba(64,128,240,.15);border:2px solid #48f}
+.rc-f{background:rgba(200,64,64,.15);border:2px solid #c44}
+.ra{font-size:1.5rem;font-weight:700;margin-bottom:8px}
+.rr{font-size:.9rem;margin-top:8px;opacity:.8}
+
+.bc{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0}
+.mc{width:42px;height:60px;background:#fff;border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:700;font-size:.85rem;border:2px solid transparent}
+.mc.t{border-color:#4af}.mc.p{border-color:#fa4}
+.mc.r{color:#c00}.mc.b{color:#111}
+.sep{display:flex;align-items:center;color:#666;font-size:1.3rem;margin:0 2px}
+
+.rbadge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.9rem}
+.rk7{background:linear-gradient(135deg,#ff6b00,#ff0080);color:#fff}
+.rk6{background:linear-gradient(135deg,#f0c040,#ff8000);color:#111}
+.rk5{background:linear-gradient(135deg,#4080ff,#8040ff);color:#fff}
+.rk4{background:linear-gradient(135deg,#20b050,#4080ff);color:#fff}
+.rk3{background:linear-gradient(135deg,#20b050,#208060);color:#fff}
+.rk2{background:rgba(255,255,255,.15);color:var(--text)}
+.rk1{background:rgba(255,0,0,.15);color:#f88}
+
+.modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;justify-content:center;align-items:center}
+.modal-ov.open{display:flex}
+.modal{background:#0d3d22;border:2px solid var(--border);border-radius:16px;padding:18px;max-width:520px;width:92%}
+.modal h3{color:var(--gold);margin-bottom:14px;text-align:center}
+.cgrid{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-bottom:14px}
+.co{width:100%;aspect-ratio:2/3;background:#fff;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;border:2px solid transparent;transition:transform .1s}
+.co:hover{transform:scale(1.1);border-color:var(--gold)}
+.co.used{opacity:.25;cursor:not-allowed;pointer-events:none}
+.co.red{color:#c00}.co.black{color:#111}
+.mc-close{width:100%;padding:8px;background:rgba(255,255,255,.1);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.85rem}
+
+.loading{text-align:center;padding:30px;color:#9fcc9f;grid-column:1/-1;animation:pulse 1s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+
+.suit-row{display:flex;align-items:center;gap:4px;margin-bottom:3px}
+.suit-lbl{width:22px;text-align:center;font-size:1.1rem}
+</style>
+</head>
+<body>
+
+<h1>🃏 НЮНЮ</h1>
+<p class="sub">Анализатор и Симулятор | Нажмите на карту для замены</p>
+
+<div class="settings">
+  <div class="sg"><label>Анте:</label><input type="number" id="ante" value="100" min="1" max="99999"></div>
+  <div class="sg"><label>Повышение ×:</label><input type="number" id="raiseMul" value="2" min="1" max="10" step="0.5"></div>
+  <div class="sg"><label>Колод:</label>
+    <select id="deckCount"><option>1</option><option>2</option><option>4</option><option value="6" selected>6</option><option>8</option></select>
+  </div>
+  <div class="sg"><label>Симуляций:</label>
+    <select id="simCount"><option>1000</option><option>5000</option><option value="10000" selected>10 000</option><option>30000</option></select>
+  </div>
+  <div class="sg"><label>Фолд:</label><input type="checkbox" id="allowFold" checked></div>
+  <div class="sg"><label>Все комбо:</label><input type="checkbox" id="showAll" checked></div>
+</div>
+
+<div class="hand-area" id="handArea"></div>
+
+<div class="controls">
+  <button class="btn btn-p" onclick="dealRandom()">🎲 Случайная раздача</button>
+  <button class="btn btn-g" onclick="analyze()">🔍 Анализировать</button>
+</div>
+
+<div class="results" id="results"></div>
+
+<div class="modal-ov" id="modalOv" onclick="closeOv(event)">
+  <div class="modal">
+    <h3 id="modalTitle">Выбор карты</h3>
+    <div class="cgrid" id="cgrid"></div>
+    <button class="mc-close" onclick="closePicker()">✕ Отмена</button>
+  </div>
+</div>
+
+<script>
+const SUITS=['♠','♥','♦','♣'];
+const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const RED=['♥','♦'];
+const FACE=['J','Q','K'];
+
+let hand=[];
+let pickIdx=-1;
+
+function cv(r){if(FACE.includes(r))return 10;if(r==='A')return 1;return+r}
+function isRed(s){return RED.includes(s)}
+function ck(c){return c.rank+c.suit}
+function mkDeck(n=1){const d=[];for(let i=0;i<n;i++)for(const s of SUITS)for(const r of RANKS)d.push({rank:r,suit:s});return d}
+function shuffle(a){const d=[...a];for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]]}return d}
+
+function getRankInfo(pts,valid){
+  if(!valid)return{rank:1,name:'Старшая карта'};
+  if(pts===0)return{rank:6,name:'Ниу-Ниу'};
+  if(pts===9)return{rank:5,name:'Большая точка 9'};
+  if(pts===8)return{rank:4,name:'Большая точка 8'};
+  if(pts===7)return{rank:3,name:'Большая точка 7'};
+  return{rank:2,name:`Малая точка ${pts}`};
+}
+
+function evalHand(cards){
+  if(cards.every(c=>FACE.includes(c.rank))){
+    return{rank:7,name:'Ультимейт Ниу-Ниу',points:0,triple:cards.slice(0,3),pair:cards.slice(3),tripleSum:30,pairSum:20,combos:null,isUlt:true};
+  }
+  const combos=[];
+  for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)for(let k=j+1;k<5;k++){
+    const ti=[i,j,k];
+    const pi=[0,1,2,3,4].filter(x=>!ti.includes(x));
+    const triple=ti.map(x=>cards[x]);
+    const pair=pi.map(x=>cards[x]);
+    const ts=triple.reduce((s,c)=>s+cv(c.rank),0);
+    const ps=pair.reduce((s,c)=>s+cv(c.rank),0);
+    const valid=ts%10===0;
+    const pts=valid?ps%10:null;
+    const{rank,name}=valid?getRankInfo(pts,true):{rank:0,name:'—'};
+    combos.push({triple,pair,tripleSum:ts,pairSum:ps,pairPoints:pts,valid,rank,name});
+  }
+  let best=null;
+  for(const c of combos){
+    if(!c.valid)continue;
+    if(!best||c.rank>best.rank||(c.rank===best.rank&&(c.pairPoints||0)>(best.pairPoints||0)))best=c;
+  }
+  if(!best){
+    const mv=Math.max(...cards.map(c=>cv(c.rank)));
+    return{rank:1,name:'Старшая карта (No Bull)',points:mv,triple:null,pair:null,tripleSum:null,pairSum:null,combos,isUlt:false};
+  }
+  return{rank:best.rank,name:best.name,points:best.pairPoints,triple:best.triple,pair:best.pair,tripleSum:best.tripleSum,pairSum:best.pairSum,combos,isUlt:false};
+}
+
+function cmpHands(a,b){
+  if(a.rank>b.rank)return 1;
+  if(a.rank<b.rank)return-1;
+  if(a.rank===7)return 0;
+  if(a.rank===6||a.rank===1){
+    const aCards=[...(a.triple||[]),...(a.pair||[]),...(a.triple?[]:[])];
+    const bCards=[...(b.triple||[]),...(b.pair||[])];
+    const am=Math.max(...(aCards.length?aCards:[...hand]).map(c=>cv(c.rank)));
+    const bm=Math.max(...(bCards.length?bCards:hand).map(c=>cv(c.rank)));
+    return am>bm?1:am<bm?-1:0;
+  }
+  return(a.points||0)>(b.points||0)?1:(a.points||0)<(b.points||0)?-1:0;
+}
+
+function simulate(playerCards,nsim,ndeck){
+  const deck=mkDeck(ndeck);
+  const usedKeys=new Set(playerCards.map(ck));
+  const remaining=[];
+  const removed=new Set();
+  for(const c of deck){
+    const k=ck(c);
+    if(usedKeys.has(k)&&!removed.has(k)){removed.add(k);continue}
+    remaining.push(c);
+  }
+  const pr=evalHand(playerCards);
+  let w=0,l=0,t=0;
+  for(let i=0;i<nsim;i++){
+    const sh=shuffle(remaining);
+    const dr=evalHand(sh.slice(0,5));
+    const r=cmpHands(pr,dr);
+    if(r>0)w++;else if(r<0)l++;else t++;
+  }
+  return{wr:w/nsim,lr:l/nsim,tr:t/nsim};
+}
+
+function dealRandom(){
+  hand=shuffle(mkDeck(1)).slice(0,5);
+  renderHand();
+  clearRes();
+}
+
+function renderHand(res=null){
+  const el=document.getElementById('handArea');
+  el.innerHTML='';
+  const tripleKeys=res&&res.triple?trackKeys(res.triple):new Set();
+  const pairKeys=res&&res.pair?trackKeys(res.pair):new Set();
+  const usedT=[],usedP=[];
+  hand.forEach((card,i)=>{
+    const div=document.createElement('div');
+    div.className=`card ${isRed(card.suit)?'red':'black'}`;
+    if(res&&res.triple){
+      const k=ck(card);
+      const ti=res.triple.findIndex((c,ci)=>ck(c)===k&&!usedT.includes(ci));
+      const pi=res.pair?res.pair.findIndex((c,ci)=>ck(c)===k&&!usedP.includes(ci)):-1;
+      if(ti!==-1){div.classList.add('in-triple');usedT.push(ti)}
+      else if(pi!==-1){div.classList.add('in-pair');usedP.push(pi)}
+    }
+    div.innerHTML=`<div class="rt">${card.rank}<br>${card.suit}</div><div class="sc">${card.suit}</div><div class="rb">${card.rank}<br>${card.suit}</div>`;
+    div.onclick=()=>openPicker(i);
+    div.title='Нажмите для замены';
+    el.appendChild(div);
+  });
+}
+
+function trackKeys(arr){return new Set(arr.map(ck))}
+
+function openPicker(idx){
+  pickIdx=idx;
+  const usedK=new Set(hand.filter((_,i)=>i!==idx).map(ck));
+  const grid=document.getElementById('cgrid');
+  grid.innerHTML='';
+  for(const s of SUITS){
+    for(const r of RANKS){
+      const k=r+s;
+      const d=document.createElement('div');
+      d.className=`co ${isRed(s)?'red':'black'} ${usedK.has(k)?'used':''}`;
+      d.innerHTML=`<span>${r}</span><span style="font-size:.7em">${s}</span>`;
+      d.onclick=()=>pickCard(r,s);
+      grid.appendChild(d);
+    }
+  }
+  document.getElementById('modalTitle').textContent=`Карта ${idx+1}`;
+  document.getElementById('modalOv').classList.add('open');
+}
+
+function pickCard(r,s){
+  if(pickIdx>=0){hand[pickIdx]={rank:r,suit:s};renderHand();clearRes()}
+  closePicker();
+}
+
+function closeOv(e){if(e.target===document.getElementById('modalOv'))closePicker()}
+function closePicker(){document.getElementById('modalOv').classList.remove('open');pickIdx=-1}
+function clearRes(){const r=document.getElementById('results');r.classList.remove('on');r.innerHTML=''}
+
+function analyze(){
+  if(hand.length<5)return;
+  const ante=+document.getElementById('ante').value||100;
+  const mul=+document.getElementById('raiseMul').value||2;
+  const nd=+document.getElementById('deckCount').value||6;
+  const af=document.getElementById('allowFold').checked;
+  const sa=document.getElementById('showAll').checked;
+  const ns=+document.getElementById('simCount').value||10000;
+  const res=document.getElementById('results');
+  res.classList.add('on');
+  res.innerHTML='<div class="loading">⚙️ Симуляция...</div>';
+  setTimeout(()=>{
+    const hr=evalHand(hand);
+    const st=simulate(hand,ns,nd);
+    const rb=ante*mul;
+    const evc=(st.wr-st.lr)*ante;
+    const evr=(st.wr-st.lr)*rb;
+    const evf=-ante;
+    const opts=[
+      {label:`⬆️ Повысить (×${mul})`,ev:evr,cls:'rc-r'},
+      {label:'✅ Колл (оставить)',ev:evc,cls:'rc-c'},
+    ];
+    if(af)opts.push({label:'⬇️ Сброс (Фолд)',ev:evf,cls:'rc-f'});
+    const best=opts.reduce((m,x)=>x.ev>m.ev?x:m);
+    const bestA=best.label,bestEV=best.ev,recCls=best.cls;
+    res.innerHTML=panelCombos(hr,sa)+panelBest(hr)+panelStats(st)+panelEV(ante,rb,mul,evc,evr,evf,af,bestA)+panelRec(hr,bestA,bestEV,recCls,st);
+    renderHand(hr);
+  },40);
+}
+
+function fmtEV(v){const s=v>0?'+':'';const cls=v>0?'pos':v<0?'neg':'neu';return`<span class="ev-v ${cls}">${s}${v.toFixed(0)}</span>`}
+
+function panelCombos(hr,sa){
+  if(!hr.combos)return`<div class="panel"><h3>🔍 Комбинации</h3><p style="color:#9fcc9f;text-align:center;padding:12px">Все 5 карт фигурные — Ультимейт Ниу-Ниу автоматически</p></div>`;
+  const valid=hr.combos.filter(c=>c.valid);
+  const bRank=valid.length?Math.max(...valid.map(c=>c.rank)):0;
+  const bPts=valid.filter(c=>c.rank===bRank).reduce((m,c)=>Math.max(m,c.pairPoints||0),0);
+  const isBest=c=>c.valid&&c.rank===bRank&&(c.pairPoints||0)===bPts;
+  let rows='';
+  hr.combos.forEach((c,i)=>{
+    if(!sa&&!c.valid)return;
+    const b=isBest(c);
+    const cls=b?'br':c.valid?'vr':'iv';
+    rows+=`<tr class="${cls}"><td>${i+1}</td><td>${c.triple.map(x=>x.rank+x.suit).join(' ')}</td><td>${c.tripleSum}</td><td>${c.valid?'<span class="ok">✓</span>':'<span class="no">✗</span>'}</td><td>${c.valid?c.pair.map(x=>x.rank+x.suit).join(' '):'—'}</td><td>${c.valid?c.pairPoints:'—'}</td><td>${c.name}${b?' ⭐':''}</td></tr>`;
+  });
+  return`<div class="panel" style="overflow-x:auto"><h3>🔍 Все комбинации (10 вариантов)</h3><table class="ct"><thead><tr><th>#</th><th>Тройка</th><th>Σ</th><th></th><th>Двойка</th><th>Очки</th><th>Результат</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+}
+
+function mcHtml(c,cls){return`<div class="mc ${cls} ${isRed(c.suit)?'r':'b'}"><span>${c.rank}</span><span>${c.suit}</span></div>`}
+
+function panelBest(hr){
+  const badge=`<span class="rbadge rk${hr.rank}">${hr.name}</span>`;
+  let body='';
+  if(hr.isUlt){
+    body=`<div class="bc">${hand.map(c=>mcHtml(c,'t')).join('')}</div><p style="text-align:center;color:#9fcc9f;font-size:.82rem">Все 5 карт — фигурные (J/Q/K)</p>`;
+  } else if(hr.triple){
+    body=`<div class="bc">${hr.triple.map(c=>mcHtml(c,'t')).join('')}<div class="sep">|</div>${hr.pair.map(c=>mcHtml(c,'p')).join('')}</div>
+    <p style="text-align:center;font-size:.82rem;color:#9fcc9f"><span style="color:#4af">■</span> Тройка: ${hr.tripleSum} (÷10) &nbsp; <span style="color:#fa4">■</span> Двойка: ${hr.pairSum} → <b>${hr.points}</b> очков</p>`;
+  } else {
+    body=`<div class="bc">${hand.map(c=>mcHtml(c,'')).join('')}</div><p style="text-align:center;color:#f88;font-size:.82rem">Нет тройки кратной 10</p>`;
+  }
+  return`<div class="panel"><h3>🏆 Оптимальная комбинация</h3><div style="text-align:center;margin-bottom:10px">${badge}</div>${body}</div>`;
+}
+
+function panelStats(st){
+  const wp=(st.wr*100).toFixed(1),tp=(st.tr*100).toFixed(1),lp=(st.lr*100).toFixed(1);
+  return`<div class="panel"><h3>📊 Статистика против дилера</h3>
+  <div class="stat-row"><span class="sl">🟢 Выигрыш</span><span class="sv" style="color:#4d4">${wp}%</span></div>
+  <div class="pbar"><div class="pbf bw" style="width:${wp}%"></div></div>
+  <div class="stat-row" style="margin-top:8px"><span class="sl">⚪ Ничья</span><span class="sv" style="color:#aaa">${tp}%</span></div>
+  <div class="pbar"><div class="pbf bt" style="width:${tp}%"></div></div>
+  <div class="stat-row" style="margin-top:8px"><span class="sl">🔴 Проигрыш</span><span class="sv" style="color:#f44">${lp}%</span></div>
+  <div class="pbar"><div class="pbf bl" style="width:${lp}%"></div></div>
+  </div>`;
+}
+
+function panelEV(ante,rb,mul,evc,evr,evf,af,bestA){
+  const isR=bestA.includes('Повыс');const isC=bestA.includes('Колл');const isF=bestA.includes('Сброс');
+  return`<div class="panel"><h3>💰 Ожидаемая ценность (EV)</h3>
+  <div class="ev-act ${isR?'rec':''}">
+    <div><div class="an">⬆️ Повысить (×${mul})</div><div style="font-size:.78rem;color:#9fcc9f">Ставка: ${rb}</div></div>
+    ${fmtEV(evr)}
+  </div>
+  <div class="ev-act ${isC?'rec':''}">
+    <div><div class="an">✅ Колл (оставить)</div><div style="font-size:.78rem;color:#9fcc9f">Ставка: ${ante}</div></div>
+    ${fmtEV(evc)}
+  </div>
+  ${af?`<div class="ev-act ${isF?'rec':''}"><div><div class="an">⬇️ Сброс (фолд)</div><div style="font-size:.78rem;color:#9fcc9f">Потеря: ${ante}</div></div>${fmtEV(evf)}</div>`:''}
+  <div style="margin-top:6px;font-size:.72rem;color:#668866;text-align:center">EV = P(выигрыш)×ставка − P(проигрыш)×ставка</div>
+  </div>`;
+}
+
+function panelRec(hr,bestA,bestEV,recCls,st){
+  const wp=(st.wr*100).toFixed(0);
+  let why='';
+  if(bestA.includes('Повыс'))why=`Сильная рука — ${hr.name}. Выигрыш ${wp}%. Повышаем ставку для максимальной прибыли.`;
+  else if(bestA.includes('Колл'))why=`Рука — ${hr.name}. Выигрыш ${wp}%. EV Колла (${bestEV>0?'+':''}${bestEV.toFixed(0)}) выше EV Фолда — оставаться выгоднее.`;
+  else why=`Слабая рука — ${hr.name}. Выигрыш лишь ${wp}%. EV Фолда меньше потерь от Колла — сброс минимизирует убытки.`;
+  return`<div class="panel full"><h3>💡 Рекомендация</h3>
+  <div class="rec-box ${recCls}">
+    <div class="ra">${bestA}</div>
+    <div>${why}</div>
+    <div class="rr">Ожидаемая ценность: ${bestEV>0?'+':''}${bestEV.toFixed(0)}</div>
+  </div></div>`;
+}
+
+dealRandom();
+</script>
+</body>
+</html>
