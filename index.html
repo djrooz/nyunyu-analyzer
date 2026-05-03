@@ -3,134 +3,226 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Нюню — Анализатор</title>
+<title>Niu Niu Poker — Анализатор</title>
 <style>
-:root{--g:#1a6b3a;--dg:#0d3d22;--gold:#f0c040;--border:#2a8a4a;--text:#e8e0d0}
+:root{--g:#1a6b3a;--dg:#0d3d22;--gold:#f0c040;--brd:#2a8a4a;--tx:#e8e0d0}
 *{box-sizing:border-box;margin:0;padding:0}
-body{background:radial-gradient(ellipse at center,#1e5c35 0%,#0a2e18 100%);color:var(--text);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:16px}
-h1{text-align:center;font-size:2.2rem;color:var(--gold);text-shadow:0 2px 10px rgba(240,192,64,.5);margin-bottom:4px;letter-spacing:2px}
-.sub{text-align:center;color:#9fcc9f;margin-bottom:18px;font-size:.9rem}
+body{background:radial-gradient(ellipse at center,#1e5c35 0%,#0a2e18 100%);color:var(--tx);font-family:'Segoe UI',system-ui,sans-serif;min-height:100vh;padding:14px}
+h1{text-align:center;font-size:2rem;color:var(--gold);text-shadow:0 2px 10px rgba(240,192,64,.5);margin-bottom:2px;letter-spacing:2px}
+.sub{text-align:center;color:#9fcc9f;margin-bottom:14px;font-size:.85rem}
 
-.settings{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;background:rgba(0,0,0,.3);border-radius:12px;padding:12px 16px;margin-bottom:16px;border:1px solid var(--border)}
-.sg{display:flex;align-items:center;gap:6px;font-size:.85rem}
+/* BETS */
+.bets{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-bottom:14px}
+.bet-box{background:rgba(0,0,0,.35);border:1px solid var(--brd);border-radius:10px;padding:10px 14px;min-width:190px;flex:1;max-width:260px}
+.bet-box.off{opacity:.45}
+.bet-header{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.bet-header label{font-weight:700;font-size:.9rem;cursor:pointer;flex:1}
+.bet-header input[type=checkbox]{width:16px;height:16px;accent-color:var(--gold);cursor:pointer}
+.bet-lbl-BET{color:#6df}
+.bet-lbl-DOUBLE{color:#fd6}
+.bet-lbl-SUPER{color:#f86}
+.bet-amt{display:flex;align-items:center;gap:6px}
+.bet-amt input{width:100%;padding:5px 8px;background:rgba(0,0,0,.4);border:1px solid var(--brd);border-radius:6px;color:var(--tx);font-size:.9rem}
+.cash-req{font-size:.72rem;color:#999;margin-top:5px}
+.cash-req span{color:#faa}
+
+/* SETTINGS */
+.settings{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;background:rgba(0,0,0,.25);border-radius:10px;padding:10px 14px;margin-bottom:14px;border:1px solid var(--brd)}
+.sg{display:flex;align-items:center;gap:6px;font-size:.82rem}
 .sg label{color:#b0d0b0}
-.sg input[type=number],.sg select{width:70px;padding:3px 6px;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:6px;color:var(--text);font-size:.85rem}
-.sg input[type=checkbox]{width:15px;height:15px;cursor:pointer;accent-color:var(--gold)}
+.sg select,.sg input[type=number]{padding:3px 6px;background:rgba(0,0,0,.4);border:1px solid var(--brd);border-radius:6px;color:var(--tx);font-size:.82rem;width:72px}
+.sg input[type=checkbox]{width:14px;height:14px;accent-color:var(--gold);cursor:pointer}
 
-.hand-area{display:flex;justify-content:center;gap:10px;margin-bottom:16px;flex-wrap:wrap}
-.card{width:78px;height:116px;background:#fff;border-radius:10px;display:flex;flex-direction:column;justify-content:space-between;padding:5px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s,border-color .2s;border:3px solid transparent;user-select:none}
+/* CARDS */
+.hand-area{display:flex;justify-content:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card{width:76px;height:112px;background:#fff;border-radius:10px;display:flex;flex-direction:column;justify-content:space-between;padding:5px;cursor:pointer;box-shadow:0 4px 12px rgba(0,0,0,.5);transition:transform .2s,box-shadow .2s,border-color .2s;border:3px solid transparent;user-select:none}
 .card:hover{transform:translateY(-8px);box-shadow:0 12px 24px rgba(0,0,0,.6)}
 .card.in-triple{border-color:#4af;transform:translateY(-6px)}
 .card.in-pair{border-color:#fa4;transform:translateY(-6px)}
-.rt,.rb{font-size:1.1rem;font-weight:700;line-height:1.1}
+.rt,.rb{font-size:1rem;font-weight:700;line-height:1.2}
 .rb{transform:rotate(180deg);align-self:flex-end}
-.sc{text-align:center;font-size:1.8rem;line-height:1}
+.sc{text-align:center;font-size:1.7rem;line-height:1}
 .red{color:#c00}.black{color:#111}
 
-.controls{display:flex;gap:10px;justify-content:center;margin-bottom:20px;flex-wrap:wrap}
-.btn{padding:10px 24px;border:none;border-radius:8px;font-size:.95rem;font-weight:600;cursor:pointer;transition:all .2s;letter-spacing:.5px}
-.btn-p{background:linear-gradient(135deg,#2d8a50,#1a5c35);color:#fff;border:2px solid #4aaa70}
-.btn-p:hover{background:linear-gradient(135deg,#3aaa60,#2a7a45);transform:translateY(-2px)}
-.btn-g{background:linear-gradient(135deg,#e8b030,#c08020);color:#1a1a1a;border:2px solid #f0c840}
-.btn-g:hover{background:linear-gradient(135deg,#f0c040,#d09030);transform:translateY(-2px)}
+/* CONTROLS */
+.controls{display:flex;gap:10px;justify-content:center;margin-bottom:18px;flex-wrap:wrap}
+.btn{padding:9px 22px;border:none;border-radius:8px;font-size:.9rem;font-weight:600;cursor:pointer;transition:all .2s}
+.bp{background:linear-gradient(135deg,#2d8a50,#1a5c35);color:#fff;border:2px solid #4aaa70}
+.bp:hover{background:linear-gradient(135deg,#3aaa60,#2a7a45);transform:translateY(-2px)}
+.bg{background:linear-gradient(135deg,#e8b030,#c08020);color:#1a1a1a;border:2px solid #f0c840}
+.bg:hover{background:linear-gradient(135deg,#f0c040,#d09030);transform:translateY(-2px)}
 
+/* RESULTS */
 .results{display:none}
-.results.on{display:grid;grid-template-columns:1fr 1fr;gap:16px}
-@media(max-width:700px){.results.on{grid-template-columns:1fr}}
+.results.on{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+@media(max-width:680px){.results.on{grid-template-columns:1fr}}
+.panel{background:rgba(0,0,0,.35);border:1px solid var(--brd);border-radius:12px;padding:13px}
+.panel h3{color:var(--gold);margin-bottom:9px;font-size:.85rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--brd);padding-bottom:6px}
+.full{grid-column:1/-1}
 
-.panel{background:rgba(0,0,0,.35);border:1px solid var(--border);border-radius:12px;padding:14px}
-.panel h3{color:var(--gold);margin-bottom:10px;font-size:.9rem;text-transform:uppercase;letter-spacing:1px;border-bottom:1px solid var(--border);padding-bottom:6px}
-
-.ct{width:100%;border-collapse:collapse;font-size:.76rem}
-.ct th{color:#9fcc9f;text-align:left;padding:3px 5px;border-bottom:1px solid var(--border)}
-.ct td{padding:3px 5px;border-bottom:1px solid rgba(42,138,74,.2)}
+/* COMBOS TABLE */
+.ct{width:100%;border-collapse:collapse;font-size:.74rem}
+.ct th{color:#9fcc9f;text-align:left;padding:3px 4px;border-bottom:1px solid var(--brd)}
+.ct td{padding:3px 4px;border-bottom:1px solid rgba(42,138,74,.15)}
 .ct .vr{color:#b0ffb0}.ct .iv{color:#555}.ct .br{background:rgba(240,192,64,.12);color:var(--gold);font-weight:700}
 .ok{color:#4f4}.no{color:#f44}
 
-.stat-row{display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid rgba(42,138,74,.2)}
-.stat-row:last-of-type{border:none}
-.sl{color:#9fcc9f;font-size:.9rem}
-.sv{font-weight:700;font-size:1rem}
-.pbar{height:7px;background:rgba(0,0,0,.3);border-radius:4px;margin-top:3px;overflow:hidden}
-.pbf{height:100%;border-radius:4px;transition:width .6s}
+/* STATS */
+.srow{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid rgba(42,138,74,.15)}
+.srow:last-of-type{border:none}
+.sl{color:#9fcc9f;font-size:.88rem}
+.sv{font-weight:700}
+.pbar{height:6px;background:rgba(0,0,0,.3);border-radius:3px;margin-top:3px;overflow:hidden}
+.pbf{height:100%;border-radius:3px;transition:width .6s}
 .bw{background:linear-gradient(90deg,#2a8,#4d4)}
 .bt{background:linear-gradient(90deg,#88a,#aaa)}
 .bl{background:linear-gradient(90deg,#a22,#d44)}
 
-.ev-act{display:flex;justify-content:space-between;align-items:center;padding:9px 12px;border-radius:8px;margin-bottom:7px;border:1px solid transparent;background:rgba(255,255,255,.04)}
-.ev-act.rec{border-color:var(--gold);background:rgba(240,192,64,.1)}
-.an{font-weight:600;font-size:.9rem}
-.ev-v{font-size:1.1rem;font-weight:700}
+/* PAYOUT TABLE */
+.ptable{width:100%;border-collapse:collapse;font-size:.8rem;margin-top:4px}
+.ptable th{color:#9fcc9f;padding:4px 8px;text-align:center;border-bottom:1px solid var(--brd);font-size:.75rem}
+.ptable td{padding:5px 8px;text-align:center;border-bottom:1px solid rgba(42,138,74,.15)}
+.ptable tr:last-child td{border:none}
+.pw{color:#4f4;font-weight:700}.pl{color:#f44;font-weight:700}.pn{color:#aaa}
+.ev-total{display:flex;justify-content:space-between;align-items:center;padding:8px 10px;border-radius:8px;margin-top:8px;background:rgba(255,255,255,.05);border:1px solid var(--brd)}
+.ev-val{font-size:1.2rem;font-weight:700}
 .pos{color:#4f4}.neg{color:#f44}.neu{color:#aaa}
 
-.full{grid-column:1/-1}
-.rec-box{padding:16px 20px;border-radius:10px;text-align:center}
-.rc-r{background:rgba(64,200,64,.15);border:2px solid #4c4}
-.rc-c{background:rgba(64,128,240,.15);border:2px solid #48f}
-.rc-f{background:rgba(200,64,64,.15);border:2px solid #c44}
-.ra{font-size:1.5rem;font-weight:700;margin-bottom:8px}
-.rr{font-size:.9rem;margin-top:8px;opacity:.8}
-
-.bc{display:flex;gap:6px;flex-wrap:wrap;justify-content:center;margin:10px 0}
-.mc{width:42px;height:60px;background:#fff;border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:700;font-size:.85rem;border:2px solid transparent}
+/* BEST COMBO */
+.bc{display:flex;gap:5px;flex-wrap:wrap;justify-content:center;margin:8px 0}
+.mc{width:40px;height:58px;background:#fff;border-radius:6px;display:flex;flex-direction:column;justify-content:center;align-items:center;font-weight:700;font-size:.82rem;border:2px solid transparent}
 .mc.t{border-color:#4af}.mc.p{border-color:#fa4}
 .mc.r{color:#c00}.mc.b{color:#111}
-.sep{display:flex;align-items:center;color:#666;font-size:1.3rem;margin:0 2px}
+.sep{display:flex;align-items:center;color:#666;font-size:1.2rem;margin:0 2px}
 
-.rbadge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.9rem}
-.rk7{background:linear-gradient(135deg,#ff6b00,#ff0080);color:#fff}
-.rk6{background:linear-gradient(135deg,#f0c040,#ff8000);color:#111}
-.rk5{background:linear-gradient(135deg,#4080ff,#8040ff);color:#fff}
-.rk4{background:linear-gradient(135deg,#20b050,#4080ff);color:#fff}
-.rk3{background:linear-gradient(135deg,#20b050,#208060);color:#fff}
-.rk2{background:rgba(255,255,255,.15);color:var(--text)}
-.rk1{background:rgba(255,0,0,.15);color:#f88}
+.rbadge{display:inline-block;padding:4px 14px;border-radius:20px;font-weight:700;font-size:.88rem}
+.s12{background:linear-gradient(135deg,#ff6b00,#ff0080);color:#fff}
+.s11{background:linear-gradient(135deg,#8040ff,#4080ff);color:#fff}
+.s10{background:linear-gradient(135deg,#f0c040,#ff8000);color:#111}
+.s9{background:linear-gradient(135deg,#2090e0,#20b0f0);color:#fff}
+.s8{background:linear-gradient(135deg,#2080c0,#20a0e0);color:#fff}
+.s7{background:linear-gradient(135deg,#20a050,#2080c0);color:#fff}
+.s6,.s5,.s4,.s3,.s2,.s1{background:rgba(255,255,255,.15);color:var(--tx)}
+.s0{background:rgba(255,0,0,.15);color:#f88}
 
+/* REC */
+.rec-box{padding:14px 18px;border-radius:10px;text-align:center}
+.rc-pos{background:rgba(64,200,64,.15);border:2px solid #4c4}
+.rc-neg{background:rgba(200,64,64,.15);border:2px solid #c44}
+.rc-neu{background:rgba(64,128,240,.15);border:2px solid #48f}
+.ra{font-size:1.3rem;font-weight:700;margin-bottom:6px}
+.rs{font-size:.85rem;margin-top:6px;opacity:.8}
+
+/* MODAL */
 .modal-ov{display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:100;justify-content:center;align-items:center}
 .modal-ov.open{display:flex}
-.modal{background:#0d3d22;border:2px solid var(--border);border-radius:16px;padding:18px;max-width:520px;width:92%}
-.modal h3{color:var(--gold);margin-bottom:14px;text-align:center}
-.cgrid{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-bottom:14px}
-.co{width:100%;aspect-ratio:2/3;background:#fff;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.6rem;font-weight:700;border:2px solid transparent;transition:transform .1s}
+.modal{background:#0d3d22;border:2px solid var(--brd);border-radius:16px;padding:16px;max-width:500px;width:94%}
+.modal h3{color:var(--gold);margin-bottom:12px;text-align:center}
+.cgrid{display:grid;grid-template-columns:repeat(13,1fr);gap:3px;margin-bottom:12px}
+.co{aspect-ratio:2/3;background:#fff;border-radius:4px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;font-size:.58rem;font-weight:700;border:2px solid transparent;transition:transform .1s}
 .co:hover{transform:scale(1.1);border-color:var(--gold)}
-.co.used{opacity:.25;cursor:not-allowed;pointer-events:none}
+.co.used{opacity:.2;cursor:not-allowed;pointer-events:none}
 .co.red{color:#c00}.co.black{color:#111}
-.mc-close{width:100%;padding:8px;background:rgba(255,255,255,.1);border:1px solid var(--border);border-radius:8px;color:var(--text);cursor:pointer;font-size:.85rem}
+.mc-close{width:100%;padding:8px;background:rgba(255,255,255,.1);border:1px solid var(--brd);border-radius:8px;color:var(--tx);cursor:pointer;font-size:.85rem}
+
+/* RULES TOGGLE */
+.rules-toggle{text-align:center;margin-bottom:12px}
+.rules-toggle button{background:none;border:1px solid var(--brd);color:#9fcc9f;border-radius:6px;padding:5px 14px;cursor:pointer;font-size:.8rem}
+.rules-panel{display:none;background:rgba(0,0,0,.3);border:1px solid var(--brd);border-radius:10px;padding:12px;margin-bottom:14px;overflow-x:auto}
+.rules-panel.open{display:block}
+.rt2{width:100%;border-collapse:collapse;font-size:.75rem}
+.rt2 th{color:var(--gold);padding:4px 8px;text-align:center;border-bottom:1px solid var(--brd)}
+.rt2 td{padding:3px 8px;text-align:center;border-bottom:1px solid rgba(42,138,74,.12)}
+.rt2 tr:last-child td{border:none}
 
 .loading{text-align:center;padding:30px;color:#9fcc9f;grid-column:1/-1;animation:pulse 1s infinite}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
 
-.suit-row{display:flex;align-items:center;gap:4px;margin-bottom:3px}
-.suit-lbl{width:22px;text-align:center;font-size:1.1rem}
+/* COMM NOTE */
+.comm{font-size:.7rem;color:#888;text-align:center;margin-top:4px}
 </style>
 </head>
 <body>
 
-<h1>🃏 НЮНЮ</h1>
-<p class="sub">Анализатор и Симулятор | Нажмите на карту для замены</p>
+<h1>🃏 NIU NIU POKER</h1>
+<p class="sub">Анализатор | Нажмите на карту для замены</p>
 
+<!-- RULES TOGGLE -->
+<div class="rules-toggle">
+  <button onclick="toggleRules()">📋 Таблица выплат</button>
+</div>
+<div class="rules-panel" id="rulesPanel">
+  <table class="rt2">
+    <thead><tr><th>Комбинация</th><th>BET</th><th>DOUBLE BET</th><th>SUPER DOUBLE</th></tr></thead>
+    <tbody>
+      <tr><td>Four of a Kind</td><td>1:1</td><td>5:1</td><td>15:1</td></tr>
+      <tr><td>Five Pictures</td><td>1:1</td><td>4:1</td><td>12:1</td></tr>
+      <tr><td>Niu Niu</td><td>1:1</td><td>3:1</td><td>10:1</td></tr>
+      <tr><td>Niu 9</td><td>1:1</td><td>2:1</td><td>9:1</td></tr>
+      <tr><td>Niu 8</td><td>1:1</td><td>2:1</td><td>8:1</td></tr>
+      <tr><td>Niu 7</td><td>1:1</td><td>2:1</td><td>7:1</td></tr>
+      <tr><td>Niu 6</td><td>1:1</td><td>1:1</td><td>6:1</td></tr>
+      <tr><td>Niu 5</td><td>1:1</td><td>1:1</td><td>5:1</td></tr>
+      <tr><td>Niu 4</td><td>1:1</td><td>1:1</td><td>4:1</td></tr>
+      <tr><td>Niu 3</td><td>1:1</td><td>1:1</td><td>3:1</td></tr>
+      <tr><td>Niu 2</td><td>1:1</td><td>1:1</td><td>2:1</td></tr>
+      <tr><td>Niu 1</td><td>1:1</td><td>1:1</td><td>1:1</td></tr>
+      <tr><td>No Combination</td><td>1:1</td><td>1:1</td><td>1:1</td></tr>
+    </tbody>
+  </table>
+  <p style="font-size:.72rem;color:#888;text-align:center;margin-top:6px">Комиссия 5% взимается с суммы выплаты при коэффициенте &gt; 1:1 · Масти: ♠ &gt; ♥ &gt; ♣ &gt; ♦ · Ранг: К &gt; Q &gt; J &gt; 10 … &gt; 2 &gt; A</p>
+</div>
+
+<!-- BET FIELDS -->
+<div class="bets">
+  <div class="bet-box" id="box-BET">
+    <div class="bet-header">
+      <input type="checkbox" id="chk-BET" checked onchange="updateBetBox('BET')">
+      <label for="chk-BET" class="bet-lbl-BET">BET</label>
+    </div>
+    <div class="bet-amt"><span style="color:#9fcc9f;font-size:.8rem">₽</span><input type="number" id="amt-BET" value="100" min="1" oninput="updateCash()"></div>
+  </div>
+  <div class="bet-box" id="box-DOUBLE">
+    <div class="bet-header">
+      <input type="checkbox" id="chk-DOUBLE" checked onchange="updateBetBox('DOUBLE')">
+      <label for="chk-DOUBLE" class="bet-lbl-DOUBLE">DOUBLE BET</label>
+    </div>
+    <div class="bet-amt"><span style="color:#9fcc9f;font-size:.8rem">₽</span><input type="number" id="amt-DOUBLE" value="200" min="1" oninput="updateCash()"></div>
+    <div class="cash-req">Нужно в наличии: 4× = <span id="cash-DOUBLE">800</span></div>
+  </div>
+  <div class="bet-box off" id="box-SUPER">
+    <div class="bet-header">
+      <input type="checkbox" id="chk-SUPER" onchange="updateBetBox('SUPER')">
+      <label for="chk-SUPER" class="bet-lbl-SUPER">SUPER DOUBLE</label>
+    </div>
+    <div class="bet-amt"><span style="color:#9fcc9f;font-size:.8rem">₽</span><input type="number" id="amt-SUPER" value="100" min="1" oninput="updateCash()"></div>
+    <div class="cash-req">Нужно в наличии: 14× = <span id="cash-SUPER">1400</span></div>
+  </div>
+</div>
+
+<!-- SETTINGS -->
 <div class="settings">
-  <div class="sg"><label>Анте:</label><input type="number" id="ante" value="100" min="1" max="99999"></div>
-  <div class="sg"><label>Повышение ×:</label><input type="number" id="raiseMul" value="2" min="1" max="10" step="0.5"></div>
   <div class="sg"><label>Колод:</label>
     <select id="deckCount"><option>1</option><option>2</option><option>4</option><option value="6" selected>6</option><option>8</option></select>
   </div>
   <div class="sg"><label>Симуляций:</label>
     <select id="simCount"><option>1000</option><option>5000</option><option value="10000" selected>10 000</option><option>30000</option></select>
   </div>
-  <div class="sg"><label>Фолд:</label><input type="checkbox" id="allowFold" checked></div>
   <div class="sg"><label>Все комбо:</label><input type="checkbox" id="showAll" checked></div>
+  <div class="sg"><label>Niu 7 — спец. правило:</label><input type="checkbox" id="niu7rule"></div>
 </div>
 
+<!-- HAND -->
 <div class="hand-area" id="handArea"></div>
 
 <div class="controls">
-  <button class="btn btn-p" onclick="dealRandom()">🎲 Случайная раздача</button>
-  <button class="btn btn-g" onclick="analyze()">🔍 Анализировать</button>
+  <button class="btn bp" onclick="dealRandom()">🎲 Случайная раздача</button>
+  <button class="btn bg" onclick="analyze()">🔍 Анализировать</button>
 </div>
 
 <div class="results" id="results"></div>
 
+<!-- MODAL -->
 <div class="modal-ov" id="modalOv" onclick="closeOv(event)">
   <div class="modal">
     <h3 id="modalTitle">Выбор карты</h3>
@@ -140,80 +232,133 @@ h1{text-align:center;font-size:2.2rem;color:var(--gold);text-shadow:0 2px 10px r
 </div>
 
 <script>
+// ============ CONSTANTS ============
 const SUITS=['♠','♥','♦','♣'];
 const RANKS=['2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const RED=['♥','♦'];
-const FACE=['J','Q','K'];
+const PICS=['J','Q','K'];
 
-let hand=[];
-let pickIdx=-1;
+// Card point value: 10/J/Q/K=0, A=1, 2-9=face
+function cv(r){if(['10','J','Q','K'].includes(r))return 0;if(r==='A')return 1;return+r}
 
-function cv(r){if(FACE.includes(r))return 10;if(r==='A')return 1;return+r}
+// Card rank for comparison: K=13 highest, A=1 lowest
+const CR={'K':13,'Q':12,'J':11,'10':10,'9':9,'8':8,'7':7,'6':6,'5':5,'4':4,'3':3,'2':2,'A':1};
+function cardRank(r){return CR[r]}
+
+// Suit rank: ♠>♥>♣>♦
+const SR={'♠':4,'♥':3,'♣':2,'♦':1};
+function suitRank(s){return SR[s]}
+
 function isRed(s){return RED.includes(s)}
 function ck(c){return c.rank+c.suit}
-function mkDeck(n=1){const d=[];for(let i=0;i<n;i++)for(const s of SUITS)for(const r of RANKS)d.push({rank:r,suit:s});return d}
-function shuffle(a){const d=[...a];for(let i=d.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[d[i],d[j]]=[d[j],d[i]]}return d}
 
-function getRankInfo(pts,valid){
-  if(!valid)return{rank:1,name:'Старшая карта'};
-  if(pts===0)return{rank:6,name:'Ниу-Ниу'};
-  if(pts===9)return{rank:5,name:'Большая точка 9'};
-  if(pts===8)return{rank:4,name:'Большая точка 8'};
-  if(pts===7)return{rank:3,name:'Большая точка 7'};
-  return{rank:2,name:`Малая точка ${pts}`};
+// Payout table [BET, DOUBLE, SUPER]
+const PAY={
+  12:[1,5,15],  // Four of a Kind
+  11:[1,4,12],  // Five Pictures
+  10:[1,3,10],  // Niu Niu
+   9:[1,2,9],
+   8:[1,2,8],
+   7:[1,2,7],
+   6:[1,1,6],
+   5:[1,1,5],
+   4:[1,1,4],
+   3:[1,1,3],
+   2:[1,1,2],
+   1:[1,1,1],
+   0:[1,1,1],   // No combo
+};
+// Special Niu7 rule (admin variant): SUPER DOUBLE 3.5:1, DOUBLE 1:1
+const PAY7_SPECIAL=[1,1,3.5];
+
+function getMul(score,betIdx,niu7rule,playerWins){
+  // betIdx: 0=BET,1=DOUBLE,2=SUPER
+  if(niu7rule&&score===7){
+    // special rule applies only when PLAYER has Niu 7
+    if(playerWins)return PAY7_SPECIAL[betIdx];
+  }
+  return PAY[score]?.[betIdx]??1;
 }
 
+function commission(mul){return mul>1?0.95:1}
+
+// ============ DECK ============
+function mkDeck(n=1){const d=[];for(let i=0;i<n;i++)for(const s of SUITS)for(const r of RANKS)d.push({rank:r,suit:s});return d}
+function shuffle(a){const d=[...a];for(let i=d.length-1;i>0;i--){const j=0|Math.random()*(i+1);[d[i],d[j]]=[d[j],d[i]]}return d}
+
+// ============ HAND EVALUATION ============
 function evalHand(cards){
-  if(cards.every(c=>FACE.includes(c.rank))){
-    return{rank:7,name:'Ультимейт Ниу-Ниу',points:0,triple:cards.slice(0,3),pair:cards.slice(3),tripleSum:30,pairSum:20,combos:null,isUlt:true};
-  }
+  // 1. Four of a Kind
+  const rc={};
+  for(const c of cards)rc[c.rank]=(rc[c.rank]||0)+1;
+  const qr=Object.keys(rc).find(r=>rc[r]>=4);
+  if(qr)return{score:12,name:'Four of a Kind',points:null,key:'four',triple:null,pair:null,combos:null,allCards:cards,quadRank:qr};
+
+  // 2. Five Pictures (J/Q/K only)
+  if(cards.every(c=>PICS.includes(c.rank)))
+    return{score:11,name:'Five Pictures',points:null,key:'five_pic',triple:null,pair:null,combos:null,allCards:cards};
+
+  // 3. Try all C(5,3)=10 triples
   const combos=[];
   for(let i=0;i<5;i++)for(let j=i+1;j<5;j++)for(let k=j+1;k<5;k++){
-    const ti=[i,j,k];
-    const pi=[0,1,2,3,4].filter(x=>!ti.includes(x));
-    const triple=ti.map(x=>cards[x]);
-    const pair=pi.map(x=>cards[x]);
-    const ts=triple.reduce((s,c)=>s+cv(c.rank),0);
-    const ps=pair.reduce((s,c)=>s+cv(c.rank),0);
-    const valid=ts%10===0;
-    const pts=valid?ps%10:null;
-    const{rank,name}=valid?getRankInfo(pts,true):{rank:0,name:'—'};
-    combos.push({triple,pair,tripleSum:ts,pairSum:ps,pairPoints:pts,valid,rank,name});
+    const ti=[i,j,k],pi=[0,1,2,3,4].filter(x=>!ti.includes(x));
+    const triple=ti.map(x=>cards[x]),pair=pi.map(x=>cards[x]);
+    const tRaw=triple.reduce((s,c)=>s+cv(c.rank),0);
+    const pRaw=pair.reduce((s,c)=>s+cv(c.rank),0);
+    const valid=tRaw%10===0;
+    const pts=valid?pRaw%10:null;
+    const sc=valid?(pts===0?10:pts):0;
+    combos.push({triple,pair,tRaw,pRaw,pairPoints:pts,valid,score:sc});
   }
+
+  // Best valid combo
   let best=null;
   for(const c of combos){
     if(!c.valid)continue;
-    if(!best||c.rank>best.rank||(c.rank===best.rank&&(c.pairPoints||0)>(best.pairPoints||0)))best=c;
+    if(!best||c.score>best.score||(c.score===best.score&&(c.pairPoints||0)>(best.pairPoints||0)))best=c;
   }
+
   if(!best){
-    const mv=Math.max(...cards.map(c=>cv(c.rank)));
-    return{rank:1,name:'Старшая карта (No Bull)',points:mv,triple:null,pair:null,tripleSum:null,pairSum:null,combos,isUlt:false};
+    return{score:0,name:'No Combination',points:null,key:'no_combo',triple:null,pair:null,combos,allCards:cards};
   }
-  return{rank:best.rank,name:best.name,points:best.pairPoints,triple:best.triple,pair:best.pair,tripleSum:best.tripleSum,pairSum:best.pairSum,combos,isUlt:false};
+  const name=best.score===10?'Niu Niu':`Niu ${best.score}`;
+  const key=best.score===10?'niu_niu':`niu_${best.score}`;
+  return{score:best.score,name,points:best.pairPoints,key,triple:best.triple,pair:best.pair,combos,allCards:cards};
+}
+
+// ============ COMPARISON ============
+function getMaxCard(cards){
+  return cards.reduce((m,c)=>{
+    const mr=cardRank(m.rank),cr=cardRank(c.rank);
+    if(cr>mr||(cr===mr&&suitRank(c.suit)>suitRank(m.suit)))return c;
+    return m;
+  });
 }
 
 function cmpHands(a,b){
-  if(a.rank>b.rank)return 1;
-  if(a.rank<b.rank)return-1;
-  if(a.rank===7)return 0;
-  if(a.rank===6||a.rank===1){
-    const aCards=[...(a.triple||[]),...(a.pair||[]),...(a.triple?[]:[])];
-    const bCards=[...(b.triple||[]),...(b.pair||[])];
-    const am=Math.max(...(aCards.length?aCards:[...hand]).map(c=>cv(c.rank)));
-    const bm=Math.max(...(bCards.length?bCards:hand).map(c=>cv(c.rank)));
-    return am>bm?1:am<bm?-1:0;
+  if(a.score!==b.score)return a.score>b.score?1:-1;
+  // Same score — tiebreaker
+  if(a.score===12){
+    // Four of a Kind: compare quad rank
+    const ar=cardRank(a.quadRank),br=cardRank(b.quadRank);
+    if(ar!==br)return ar>br?1:-1;
   }
-  return(a.points||0)>(b.points||0)?1:(a.points||0)<(b.points||0)?-1:0;
+  // Compare highest card
+  const am=getMaxCard(a.allCards),bm=getMaxCard(b.allCards);
+  const ar=cardRank(am.rank),br=cardRank(bm.rank);
+  if(ar!==br)return ar>br?1:-1;
+  const as=suitRank(am.suit),bs=suitRank(bm.suit);
+  return as>bs?1:as<bs?-1:0;
 }
 
-function simulate(playerCards,nsim,ndeck){
+// ============ SIMULATION ============
+function simulate(playerCards,nsim,ndeck,niu7rule){
   const deck=mkDeck(ndeck);
-  const usedKeys=new Set(playerCards.map(ck));
-  const remaining=[];
   const removed=new Set();
+  const remaining=[];
   for(const c of deck){
     const k=ck(c);
-    if(usedKeys.has(k)&&!removed.has(k)){removed.add(k);continue}
+    if(playerCards.some(pc=>ck(pc)===k)&&!removed.has(k)){removed.add(k);continue}
     remaining.push(c);
   }
   const pr=evalHand(playerCards);
@@ -224,20 +369,18 @@ function simulate(playerCards,nsim,ndeck){
     const r=cmpHands(pr,dr);
     if(r>0)w++;else if(r<0)l++;else t++;
   }
-  return{wr:w/nsim,lr:l/nsim,tr:t/nsim};
+  return{wr:w/nsim,lr:l/nsim,tr:t/nsim,playerResult:pr};
 }
 
-function dealRandom(){
-  hand=shuffle(mkDeck(1)).slice(0,5);
-  renderHand();
-  clearRes();
-}
+// ============ STATE ============
+let hand=[];
+let pickIdx=-1;
+
+function dealRandom(){hand=shuffle(mkDeck(1)).slice(0,5);renderHand();clearRes()}
 
 function renderHand(res=null){
   const el=document.getElementById('handArea');
   el.innerHTML='';
-  const tripleKeys=res&&res.triple?trackKeys(res.triple):new Set();
-  const pairKeys=res&&res.pair?trackKeys(res.pair):new Set();
   const usedT=[],usedP=[];
   hand.forEach((card,i)=>{
     const div=document.createElement('div');
@@ -251,147 +394,202 @@ function renderHand(res=null){
     }
     div.innerHTML=`<div class="rt">${card.rank}<br>${card.suit}</div><div class="sc">${card.suit}</div><div class="rb">${card.rank}<br>${card.suit}</div>`;
     div.onclick=()=>openPicker(i);
-    div.title='Нажмите для замены';
     el.appendChild(div);
   });
 }
-
-function trackKeys(arr){return new Set(arr.map(ck))}
 
 function openPicker(idx){
   pickIdx=idx;
   const usedK=new Set(hand.filter((_,i)=>i!==idx).map(ck));
   const grid=document.getElementById('cgrid');
   grid.innerHTML='';
-  for(const s of SUITS){
-    for(const r of RANKS){
-      const k=r+s;
-      const d=document.createElement('div');
-      d.className=`co ${isRed(s)?'red':'black'} ${usedK.has(k)?'used':''}`;
-      d.innerHTML=`<span>${r}</span><span style="font-size:.7em">${s}</span>`;
-      d.onclick=()=>pickCard(r,s);
-      grid.appendChild(d);
-    }
+  for(const s of SUITS)for(const r of RANKS){
+    const k=r+s;
+    const d=document.createElement('div');
+    d.className=`co ${isRed(s)?'red':'black'} ${usedK.has(k)?'used':''}`;
+    d.innerHTML=`<span>${r}</span><span style="font-size:.65em">${s}</span>`;
+    d.onclick=()=>{if(pickIdx>=0){hand[pickIdx]={rank:r,suit:s};renderHand();clearRes()}closePicker()};
+    grid.appendChild(d);
   }
   document.getElementById('modalTitle').textContent=`Карта ${idx+1}`;
   document.getElementById('modalOv').classList.add('open');
 }
-
-function pickCard(r,s){
-  if(pickIdx>=0){hand[pickIdx]={rank:r,suit:s};renderHand();clearRes()}
-  closePicker();
-}
-
 function closeOv(e){if(e.target===document.getElementById('modalOv'))closePicker()}
 function closePicker(){document.getElementById('modalOv').classList.remove('open');pickIdx=-1}
 function clearRes(){const r=document.getElementById('results');r.classList.remove('on');r.innerHTML=''}
 
+function updateBetBox(type){
+  const on=document.getElementById(`chk-${type}`).checked;
+  document.getElementById(`box-${type}`).classList.toggle('off',!on);
+}
+function updateCash(){
+  const d=+document.getElementById('amt-DOUBLE').value||0;
+  const s=+document.getElementById('amt-SUPER').value||0;
+  document.getElementById('cash-DOUBLE').textContent=(d*4).toLocaleString();
+  document.getElementById('cash-SUPER').textContent=(s*14).toLocaleString();
+}
+function toggleRules(){document.getElementById('rulesPanel').classList.toggle('open')}
+
+// ============ ANALYZE ============
 function analyze(){
   if(hand.length<5)return;
-  const ante=+document.getElementById('ante').value||100;
-  const mul=+document.getElementById('raiseMul').value||2;
   const nd=+document.getElementById('deckCount').value||6;
-  const af=document.getElementById('allowFold').checked;
-  const sa=document.getElementById('showAll').checked;
   const ns=+document.getElementById('simCount').value||10000;
+  const sa=document.getElementById('showAll').checked;
+  const niu7=document.getElementById('niu7rule').checked;
+
+  const bets=[
+    {id:'BET',  idx:0,label:'BET',      color:'#6df'},
+    {id:'DOUBLE',idx:1,label:'DOUBLE BET',color:'#fd6'},
+    {id:'SUPER', idx:2,label:'SUPER DOUBLE',color:'#f86'},
+  ].filter(b=>document.getElementById(`chk-${b.id}`).checked)
+   .map(b=>({...b,amt:+document.getElementById(`amt-${b.id}`).value||0}));
+
   const res=document.getElementById('results');
   res.classList.add('on');
   res.innerHTML='<div class="loading">⚙️ Симуляция...</div>';
+
   setTimeout(()=>{
-    const hr=evalHand(hand);
-    const st=simulate(hand,ns,nd);
-    const rb=ante*mul;
-    const evc=(st.wr-st.lr)*ante;
-    const evr=(st.wr-st.lr)*rb;
-    const evf=-ante;
-    const opts=[
-      {label:`⬆️ Повысить (×${mul})`,ev:evr,cls:'rc-r'},
-      {label:'✅ Колл (оставить)',ev:evc,cls:'rc-c'},
-    ];
-    if(af)opts.push({label:'⬇️ Сброс (Фолд)',ev:evf,cls:'rc-f'});
-    const best=opts.reduce((m,x)=>x.ev>m.ev?x:m);
-    const bestA=best.label,bestEV=best.ev,recCls=best.cls;
-    res.innerHTML=panelCombos(hr,sa)+panelBest(hr)+panelStats(st)+panelEV(ante,rb,mul,evc,evr,evf,af,bestA)+panelRec(hr,bestA,bestEV,recCls,st);
+    const st=simulate(hand,ns,nd,niu7);
+    const hr=st.playerResult;
+
+    // EV for each bet
+    bets.forEach(b=>{
+      const mul=getMul(hr.score,b.idx,niu7,true);
+      const com=commission(mul);
+      b.mul=mul;
+      b.winAmt=+(b.amt*mul*com).toFixed(2);
+      b.ev=+(st.wr*b.winAmt-st.lr*b.amt).toFixed(2);
+    });
+    const totalEV=+bets.reduce((s,b)=>s+b.ev,0).toFixed(2);
+
+    res.innerHTML=
+      panelCombos(hr,sa)+
+      panelBest(hr)+
+      panelStats(st)+
+      panelPayout(hr,bets,st,totalEV,niu7)+
+      panelRec(hr,bets,totalEV,st);
+
     renderHand(hr);
   },40);
 }
 
-function fmtEV(v){const s=v>0?'+':'';const cls=v>0?'pos':v<0?'neg':'neu';return`<span class="ev-v ${cls}">${s}${v.toFixed(0)}</span>`}
+// ============ RENDER PANELS ============
+function fmtMoney(v){const s=v>0?'+':'';return`${s}${v.toFixed(0)}`}
+function evCls(v){return v>0?'pos':v<0?'neg':'neu'}
 
 function panelCombos(hr,sa){
-  if(!hr.combos)return`<div class="panel"><h3>🔍 Комбинации</h3><p style="color:#9fcc9f;text-align:center;padding:12px">Все 5 карт фигурные — Ультимейт Ниу-Ниу автоматически</p></div>`;
+  if(!hr.combos){
+    const desc=hr.score===12?'Каре — 4 карты одного номинала':'Все 5 карт — только фигуры (J/Q/K)';
+    return`<div class="panel"><h3>🔍 Комбинации</h3><p style="color:#9fcc9f;text-align:center;padding:10px">${desc}</p></div>`;
+  }
   const valid=hr.combos.filter(c=>c.valid);
-  const bRank=valid.length?Math.max(...valid.map(c=>c.rank)):0;
-  const bPts=valid.filter(c=>c.rank===bRank).reduce((m,c)=>Math.max(m,c.pairPoints||0),0);
-  const isBest=c=>c.valid&&c.rank===bRank&&(c.pairPoints||0)===bPts;
+  const bSc=valid.length?Math.max(...valid.map(c=>c.score)):0;
+  const bPts=valid.filter(c=>c.score===bSc).reduce((m,c)=>Math.max(m,c.pairPoints||0),0);
+  const isBest=c=>c.valid&&c.score===bSc&&(c.pairPoints||0)===bPts;
   let rows='';
   hr.combos.forEach((c,i)=>{
     if(!sa&&!c.valid)return;
     const b=isBest(c);
     const cls=b?'br':c.valid?'vr':'iv';
-    rows+=`<tr class="${cls}"><td>${i+1}</td><td>${c.triple.map(x=>x.rank+x.suit).join(' ')}</td><td>${c.tripleSum}</td><td>${c.valid?'<span class="ok">✓</span>':'<span class="no">✗</span>'}</td><td>${c.valid?c.pair.map(x=>x.rank+x.suit).join(' '):'—'}</td><td>${c.valid?c.pairPoints:'—'}</td><td>${c.name}${b?' ⭐':''}</td></tr>`;
+    const name=c.valid?(c.score===10?'Niu Niu':c.score>0?`Niu ${c.score}`:'No Combo'):'—';
+    rows+=`<tr class="${cls}"><td>${i+1}</td><td>${c.triple.map(x=>x.rank+x.suit).join(' ')}</td><td>${c.tRaw}→${c.tRaw%10}</td><td>${c.valid?'<span class="ok">✓</span>':'<span class="no">✗</span>'}</td><td>${c.valid?c.pair.map(x=>x.rank+x.suit).join(' '):'—'}</td><td>${c.valid?c.pairPoints:'—'}</td><td>${name}${b?' ⭐':''}</td></tr>`;
   });
-  return`<div class="panel" style="overflow-x:auto"><h3>🔍 Все комбинации (10 вариантов)</h3><table class="ct"><thead><tr><th>#</th><th>Тройка</th><th>Σ</th><th></th><th>Двойка</th><th>Очки</th><th>Результат</th></tr></thead><tbody>${rows}</tbody></table></div>`;
+  return`<div class="panel" style="overflow-x:auto"><h3>🔍 Все 10 комбинаций</h3><table class="ct"><thead><tr><th>#</th><th>Тройка</th><th>Σ→%10</th><th></th><th>Двойка</th><th>Очки</th><th>Рез.</th></tr></thead><tbody>${rows}</tbody></table></div>`;
 }
 
 function mcHtml(c,cls){return`<div class="mc ${cls} ${isRed(c.suit)?'r':'b'}"><span>${c.rank}</span><span>${c.suit}</span></div>`}
 
 function panelBest(hr){
-  const badge=`<span class="rbadge rk${hr.rank}">${hr.name}</span>`;
+  const sc=hr.score;
+  const badge=`<span class="rbadge s${sc}">${hr.name}</span>`;
   let body='';
-  if(hr.isUlt){
-    body=`<div class="bc">${hand.map(c=>mcHtml(c,'t')).join('')}</div><p style="text-align:center;color:#9fcc9f;font-size:.82rem">Все 5 карт — фигурные (J/Q/K)</p>`;
-  } else if(hr.triple){
-    body=`<div class="bc">${hr.triple.map(c=>mcHtml(c,'t')).join('')}<div class="sep">|</div>${hr.pair.map(c=>mcHtml(c,'p')).join('')}</div>
-    <p style="text-align:center;font-size:.82rem;color:#9fcc9f"><span style="color:#4af">■</span> Тройка: ${hr.tripleSum} (÷10) &nbsp; <span style="color:#fa4">■</span> Двойка: ${hr.pairSum} → <b>${hr.points}</b> очков</p>`;
+  if(hr.score===12){
+    body=`<div class="bc">${hr.allCards.map(c=>mcHtml(c,'')).join('')}</div><p style="text-align:center;color:#9fcc9f;font-size:.8rem">Каре ${hr.quadRank}'s</p>`;
+  } else if(!hr.triple){
+    body=`<div class="bc">${hr.allCards.map(c=>mcHtml(c,'')).join('')}</div>${hr.score===11?'<p style="text-align:center;color:#9fcc9f;font-size:.8rem">Все карты — фигуры (J/Q/K)</p>':'<p style="text-align:center;color:#f88;font-size:.8rem">Нет тройки с суммой ÷10</p>'}`;
   } else {
-    body=`<div class="bc">${hand.map(c=>mcHtml(c,'')).join('')}</div><p style="text-align:center;color:#f88;font-size:.82rem">Нет тройки кратной 10</p>`;
+    body=`<div class="bc">${hr.triple.map(c=>mcHtml(c,'t')).join('')}<div class="sep">|</div>${hr.pair.map(c=>mcHtml(c,'p')).join('')}</div>
+    <p style="text-align:center;font-size:.8rem;color:#9fcc9f"><span style="color:#4af">■</span> Тройка: ${hr.triple.reduce((s,c)=>s+cv(c.rank),0)}→0 &nbsp;<span style="color:#fa4">■</span> Двойка: ${hr.pair.reduce((s,c)=>s+cv(c.rank),0)}→<b>${hr.points}</b></p>`;
   }
-  return`<div class="panel"><h3>🏆 Оптимальная комбинация</h3><div style="text-align:center;margin-bottom:10px">${badge}</div>${body}</div>`;
+  return`<div class="panel"><h3>🏆 Оптимальная комбинация</h3><div style="text-align:center;margin-bottom:8px">${badge}</div>${body}</div>`;
 }
 
 function panelStats(st){
   const wp=(st.wr*100).toFixed(1),tp=(st.tr*100).toFixed(1),lp=(st.lr*100).toFixed(1);
   return`<div class="panel"><h3>📊 Статистика против дилера</h3>
-  <div class="stat-row"><span class="sl">🟢 Выигрыш</span><span class="sv" style="color:#4d4">${wp}%</span></div>
+  <div class="srow"><span class="sl">🟢 Выигрыш</span><span class="sv" style="color:#4d4">${wp}%</span></div>
   <div class="pbar"><div class="pbf bw" style="width:${wp}%"></div></div>
-  <div class="stat-row" style="margin-top:8px"><span class="sl">⚪ Ничья</span><span class="sv" style="color:#aaa">${tp}%</span></div>
+  <div class="srow" style="margin-top:7px"><span class="sl">⚪ Ничья</span><span class="sv" style="color:#aaa">${tp}%</span></div>
   <div class="pbar"><div class="pbf bt" style="width:${tp}%"></div></div>
-  <div class="stat-row" style="margin-top:8px"><span class="sl">🔴 Проигрыш</span><span class="sv" style="color:#f44">${lp}%</span></div>
+  <div class="srow" style="margin-top:7px"><span class="sl">🔴 Проигрыш</span><span class="sv" style="color:#f44">${lp}%</span></div>
   <div class="pbar"><div class="pbf bl" style="width:${lp}%"></div></div>
   </div>`;
 }
 
-function panelEV(ante,rb,mul,evc,evr,evf,af,bestA){
-  const isR=bestA.includes('Повыс');const isC=bestA.includes('Колл');const isF=bestA.includes('Сброс');
-  return`<div class="panel"><h3>💰 Ожидаемая ценность (EV)</h3>
-  <div class="ev-act ${isR?'rec':''}">
-    <div><div class="an">⬆️ Повысить (×${mul})</div><div style="font-size:.78rem;color:#9fcc9f">Ставка: ${rb}</div></div>
-    ${fmtEV(evr)}
-  </div>
-  <div class="ev-act ${isC?'rec':''}">
-    <div><div class="an">✅ Колл (оставить)</div><div style="font-size:.78rem;color:#9fcc9f">Ставка: ${ante}</div></div>
-    ${fmtEV(evc)}
-  </div>
-  ${af?`<div class="ev-act ${isF?'rec':''}"><div><div class="an">⬇️ Сброс (фолд)</div><div style="font-size:.78rem;color:#9fcc9f">Потеря: ${ante}</div></div>${fmtEV(evf)}</div>`:''}
-  <div style="margin-top:6px;font-size:.72rem;color:#668866;text-align:center">EV = P(выигрыш)×ставка − P(проигрыш)×ставка</div>
+function panelPayout(hr,bets,st,totalEV,niu7){
+  if(!bets.length)return`<div class="panel"><h3>💰 Выплаты / EV</h3><p style="color:#888;text-align:center;padding:10px">Нет активных ставок</p></div>`;
+  let rows='';
+  bets.forEach(b=>{
+    const hasCom=b.mul>1;
+    const mulStr=hasCom?`${b.mul}:1 (−5%)`:`${b.mul}:1`;
+    const winStr=`+${b.winAmt.toLocaleString()}`;
+    const lossStr=`−${b.amt.toLocaleString()}`;
+    const evStr=fmtMoney(b.ev);
+    rows+=`<tr>
+      <td style="color:${b.color};font-weight:700">${b.label}</td>
+      <td>${b.amt.toLocaleString()}</td>
+      <td>${mulStr}</td>
+      <td class="pw">${winStr}</td>
+      <td class="pl">${lossStr}</td>
+      <td class="${evCls(b.ev)} pw" style="font-weight:700">${evStr}</td>
+    </tr>`;
+  });
+  const tevCls=evCls(totalEV);
+  return`<div class="panel"><h3>💰 Выплаты / EV</h3>
+  <table class="ptable">
+    <thead><tr><th>Поле</th><th>Ставка</th><th>Коэфф.</th><th>Выигрыш</th><th>Проигрыш</th><th>EV</th></tr></thead>
+    <tbody>${rows}</tbody>
+  </table>
+  <div class="ev-total"><span style="color:#9fcc9f">Суммарный EV</span><span class="ev-val ${tevCls}">${fmtMoney(totalEV)}</span></div>
+  <div class="comm">EV = P(выигрыш)×выплата − P(проигрыш)×ставка · комиссия 5% при коэфф. &gt; 1:1</div>
   </div>`;
 }
 
-function panelRec(hr,bestA,bestEV,recCls,st){
+function panelRec(hr,bets,totalEV,st){
   const wp=(st.wr*100).toFixed(0);
-  let why='';
-  if(bestA.includes('Повыс'))why=`Сильная рука — ${hr.name}. Выигрыш ${wp}%. Повышаем ставку для максимальной прибыли.`;
-  else if(bestA.includes('Колл'))why=`Рука — ${hr.name}. Выигрыш ${wp}%. EV Колла (${bestEV>0?'+':''}${bestEV.toFixed(0)}) выше EV Фолда — оставаться выгоднее.`;
-  else why=`Слабая рука — ${hr.name}. Выигрыш лишь ${wp}%. EV Фолда меньше потерь от Колла — сброс минимизирует убытки.`;
+  let title,why,cls;
+  if(totalEV>0){
+    title='✅ Играть — ожидаемая прибыль';
+    cls='rc-pos';
+    const best=bets.filter(b=>b.ev>0).map(b=>b.label).join(' + ');
+    why=`Комбинация <b>${hr.name}</b> при выигрыше ${wp}% даёт положительный EV. Рекомендуемые поля: <b>${best||'—'}</b>.`;
+  } else if(totalEV<0&&Math.abs(totalEV)>10){
+    title='⚠️ Рискованно — ожидаемый убыток';
+    cls='rc-neg';
+    why=`Рука <b>${hr.name}</b>, выигрыш лишь ${wp}%. Суммарный EV отрицательный. Рассмотрите уменьшение ставок.`;
+  } else {
+    title='➖ Нейтральная позиция';
+    cls='rc-neu';
+    why=`Рука <b>${hr.name}</b>, выигрыш ${wp}%. EV около нуля — решение на усмотрение игрока.`;
+  }
+  // Per-field advice
+  let fieldAdv='';
+  bets.forEach(b=>{
+    const sign=b.ev>0?'✅':'❌';
+    fieldAdv+=`<span style="margin:0 6px;font-size:.8rem">${sign} ${b.label}: <b class="${evCls(b.ev)}">${fmtMoney(b.ev)}</b></span>`;
+  });
   return`<div class="panel full"><h3>💡 Рекомендация</h3>
-  <div class="rec-box ${recCls}">
-    <div class="ra">${bestA}</div>
+  <div class="rec-box ${cls}">
+    <div class="ra">${title}</div>
     <div>${why}</div>
-    <div class="rr">Ожидаемая ценность: ${bestEV>0?'+':''}${bestEV.toFixed(0)}</div>
+    ${fieldAdv?`<div style="margin-top:8px">${fieldAdv}</div>`:''}
+    <div class="rs">Суммарный EV: ${fmtMoney(totalEV)}</div>
   </div></div>`;
 }
 
+// Init
+updateCash();
 dealRandom();
 </script>
 </body>
